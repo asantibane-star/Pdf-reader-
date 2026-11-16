@@ -1,7 +1,7 @@
 # Lector — lector de documentos y escáner para Android
 
 La especificación completa está en [`docs/PLAN.md`](docs/PLAN.md). Léela entera antes de escribir código y
-ejecuta sus fases (§13) en orden. Las decisiones marcadas **[FIJO]** no se cambian sin preguntar al usuario.
+ejecuta sus fases (§13) en orden. El diseño de interfaz está en [`docs/DESIGN.md`](docs/DESIGN.md) y es igual de obligatorio. Las decisiones marcadas **[FIJO]** no se cambian sin preguntar al usuario.
 
 ## Reglas que nunca se rompen
 
@@ -10,6 +10,8 @@ ejecuta sus fases (§13) en orden. Las decisiones marcadas **[FIJO]** no se camb
 - Los WebView se crean solo en `SecureWebViewFactory`. Prohibido `addJavascriptInterface`.
 - `PdfRenderer` se usa solo dentro de `FrameworkPdfEngine`, en su dispatcher de un hilo.
 - Prohibido `!!`, `runBlocking`, `GlobalScope` y E/S en el hilo principal. Las funciones de `data` devuelven `Outcome<T>`.
+- LibreOffice corre solo en el proceso `:converter`, nunca en el de la UI. Sus binarios no se suben a git.
+- La interfaz usa solo los tokens y componentes de `docs/DESIGN.md`: sin colores, radios ni tamaños literales en las pantallas.
 - Sin dependencias nuevas fuera de `docs/PLAN.md` §2 sin anotarlo en `docs/DECISIONS.md`.
 - Nunca subir keystores, `local.properties` ni secretos.
 

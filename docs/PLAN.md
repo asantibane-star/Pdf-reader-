@@ -13,9 +13,9 @@ y no cambiar una decisión marcada **[FIJO]** sin consultarlo con el usuario.
 | Función | Formatos | Motor |
 |---|---|---|
 | Leer PDF | `.pdf` | `android.graphics.pdf.PdfRenderer` (nativo) |
-| Leer Word | `.docx` | `docx-preview` (JS) en WebView aislado |
+| Leer PowerPoint **con fidelidad** | `.pptx`, `.ppt`, `.ppsx`, `.pps`, `.odp` | LibreOffice embebido → PDF → visor de PDF (§7) |
+| Leer Word | `.docx`, `.doc`, `.odt`, `.rtf` | LibreOffice embebido → PDF → visor de PDF (§7) |
 | Leer Excel | `.xlsx`, `.xls`, `.ods`, `.csv` | SheetJS (JS) en WebView aislado |
-| Leer PowerPoint | `.pptx` | Ver §7.4 (spike + respaldo simplificado) |
 | Leer texto | `.txt`, `.md`, `.log` | Compose nativo |
 | Escanear a PDF | cámara / galería | ML Kit Document Scanner + respaldo propio |
 | Recientes | — | Room |
@@ -23,8 +23,7 @@ y no cambiar una decisión marcada **[FIJO]** sin consultarlo con el usuario.
 
 ### 1.2 Qué NO hace (v1) — no implementar
 
-- Formatos binarios antiguos `.doc` y `.ppt`: se muestra "Formato antiguo no compatible" con
-  botón **Abrir con otra app**. (Fase opcional 9 los cubre como solo-texto.)
+- Reproducir animaciones, transiciones, vídeo o audio de presentaciones: las diapositivas se ven estáticas.
 - Editar, anotar, firmar o rellenar formularios.
 - Explorar todos los archivos del teléfono (exigiría `MANAGE_EXTERNAL_STORAGE`; se descarta por seguridad).
 - Nube, cuentas, sincronización, analítica, reporte remoto de errores.
@@ -63,8 +62,11 @@ compatibilidad AGP↔Gradle↔Kotlin↔KSP, y fijarlas en `gradle/libs.versions.
 | Fotos | `androidx.exifinterface:exifinterface` |
 | Tests | JUnit4, `kotlinx-coroutines-test`, Turbine, Robolectric, `androidx.test` (core, runner, ext-junit), `compose-ui-test-junit4`, Espresso-web |
 
+Motor de ofimática: LibreOfficeKit (binarios nativos descargados por `scripts/fetch-lokit.sh` con hash fijado, ver §7.2).
+Fuentes de interfaz Geist y Geist Mono (OFL) e iconos Phosphor Light (MIT), ambos incluidos en `res/`.
+
 Librerías JS **vendorizadas** en `app/src/main/assets/viewer/vendor/` (jamás por CDN):
-`jszip`, `docx-preview`, `xlsx` (SheetJS CE). Registrar versión, URL de origen, licencia y SHA-256 de
+`xlsx` (SheetJS CE); `jszip` y `docx-preview` solo si se activa el respaldo de §7.6. Registrar versión, URL de origen, licencia y SHA-256 de
 cada archivo en `THIRD_PARTY.md`. Un test unitario recalcula los SHA-256 y falla si no coinciden.
 
 No añadir ninguna otra dependencia sin justificarla en `docs/DECISIONS.md`.
@@ -104,7 +106,7 @@ dev.lector.app
 ├── data/
 │   ├── intake/                  UriIntake (copia a caché), MagicSniffer, ZipInspector, FileNameSanitizer
 │   ├── pdf/                     PdfEngine, FrameworkPdfEngine, PdfBitmapCache, JpegPdfWriter
-│   ├── office/                  OfficeSession (nonce → archivo), SecureWebViewFactory, ViewerRequestInterceptor
+│   ├── office/                  ConverterService (:converter), OfficeConverter, ConversionCache, SecureWebViewFactory, ViewerRequestInterceptor
 │   ├── text/                    TextLoader
 │   ├── scan/                    MlKitScanner, ImageImport, MediaStoreSaver
 │   ├── recents/                 Room: RecentEntity, RecentDao, LectorDatabase
@@ -165,7 +167,7 @@ mitad de lectura, y se elimina toda una clase de errores intermitentes.
 - Único componente exportado: `MainActivity` (`LAUNCHER` + `VIEW`/`SEND` con `content` y los MIME de §1.1).
   Sin `android:scheme="file"`.
 - `FileProvider`: `exported="false"`, `grantUriPermissions="true"`, rutas **solo** `cache/share/` y `cache/camera/`.
-- Sin `Service`, `BroadcastReceiver` ni `ContentProvider` propios exportados. Sin `PendingIntent`.
+- Único `Service`: `ConverterService`, no exportado, en proceso `:converter` (§7.3). Sin `BroadcastReceiver` ni `ContentProvider` exportados. Sin `PendingIntent`.
 - Tras añadir ML Kit, revisar el manifiesto fusionado y eliminar con `tools:node="remove"` cualquier permiso
   añadido. Si ML Kit registra un error de telemetría por no tener red, es esperado e inocuo.
 
@@ -176,10 +178,10 @@ mitad de lectura, y se elimina toda una clase de errores intermitentes.
 | Esquema | Solo `content://`. Cualquier otro → `DocError.UnsupportedSource`. |
 | Tamaño | PDF ≤ 500 MB; ofimática ≤ 50 MB; texto ≤ 5 MB. Contar bytes **mientras se copia** (no fiarse de `OpenableColumns.SIZE`) y abortar al superar. |
 | Espacio | Exigir `cacheDir.usableSpace ≥ tamaño + 50 MB`; si no, `DocError.NoSpace`. |
-| Tipo | `MagicSniffer`: `%PDF-` en los primeros 1024 bytes → PDF; `PK\x03\x04` → ZIP y se decide por entradas (`word/document.xml`, `xl/workbook.xml`, `ppt/presentation.xml`, `mimetype` de ODS); `D0 CF 11 E0` → OLE2 (xls si extensión/MIME lo indica; si no, "formato antiguo"); resto → texto solo si decodifica como UTF-8/Latin-1 sin bytes NUL. |
+| Tipo | `MagicSniffer`: `%PDF-` en los primeros 1024 bytes → PDF; `PK\x03\x04` → ZIP y se decide por entradas (`word/document.xml`, `xl/workbook.xml`, `ppt/presentation.xml`, `mimetype` de ODS); `D0 CF 11 E0` → OLE2: se distingue `.doc`/`.ppt`/`.xls` por los nombres de flujo del contenedor (`WordDocument`, `PowerPoint Document`, `Workbook`/`Book`), leyendo solo el directorio; `{\rtf` → RTF; resto → texto solo si decodifica como UTF-8/Latin-1 sin bytes NUL. |
 | ZIP | `ZipInspector` con `ZipInputStream`: ≤ 5 000 entradas; suma **real** descomprimida ≤ 300 MB; ninguna entrada > 100 MB; rechazar nombres con `..`, absolutos o `\`. Nunca se extrae a disco. |
 | Nombres | `displayName` solo se muestra. Los archivos propios se nombran con UUID. `FileNameSanitizer` para nombres que escribe el usuario: quitar `/ \ : * ? " < > |`, caracteres de control y puntos iniciales; máx. 100 caracteres; vacío → `Escaneo AAAA-MM-DD HHmm`. |
-| Limpieza | Borrar `cacheDir/open/`, `cache/share/`, `cache/camera/` al iniciar el proceso (salvo el archivo de la sesión restaurada) y borrar el archivo al cerrar el visor. |
+| Limpieza | (`cacheDir/converted/` se conserva, ver §7.3.) Borrar `cacheDir/open/`, `cache/share/`, `cache/camera/` al iniciar el proceso (salvo el archivo de la sesión restaurada) y borrar el archivo al cerrar el visor. |
 
 ### 4.3 WebView endurecido (`SecureWebViewFactory`) — único punto de creación de WebView
 
@@ -301,6 +303,9 @@ dejarlo al GC. `onTrimMemory(≥ RUNNING_LOW)` → `evictAll()`.
   desplazamientos para mantener el punto focal y, con *debounce* de 150 ms, se re-renderiza **solo la región visible**
   a resolución nativa como capa superpuesta (`region`). Doble toque alterna 1× ↔ 2,5×.
   Si la capa de alta resolución da problemas, se acepta quedarse con el bitmap base escalado (borroso pero estable).
+- **Modo presentación** (`presentationMode = true`, documentos convertidos desde diapositivas): `HorizontalPager`, una
+  diapositiva por página ajustada a la pantalla, tira de miniaturas inferior, rotar a horizontal ocupa toda la pantalla.
+  Mismo motor, caché y reglas de zoom.
 - Barra superior e inferior se ocultan con un toque. Indicador "12 / 340", deslizador de páginas (si > 3 páginas),
   diálogo "Ir a página" con validación numérica.
 - Acciones: buscar (si `canSearch`), compartir, guardar copia, imprimir, modo noche (invertir con `ColorMatrix`), mantener pantalla encendida.
@@ -311,38 +316,106 @@ dejarlo al GC. `onTrimMemory(≥ RUNNING_LOW)` → `evictAll()`.
 
 ## 7. Visor de ofimática
 
-### 7.1 Página anfitriona (`assets/viewer/`)
+Requisito del usuario: **las presentaciones se ven tal cual son** (solo lectura). Eso descarta los
+renderizadores JS como motor principal: ninguno reproduce de forma fiable temas, SmartArt, gráficos,
+degradados y fuentes, y ninguno abre `.ppt` binario.
 
-`index.html` + `viewer.js` + `viewer.css` + `vendor/`. Sin `eval`, sin scripts en línea, sin recursos externos.
-`viewer.js` lee `?kind=docx|sheet|pptx&nonce=…`, hace `fetch('/doc/<nonce>')` → `ArrayBuffer`, renderiza y
-notifica `rendered` o `error:<código>`. Todo dentro de `try/catch` + `window.onerror` + `unhandledrejection`.
-Tiempo máximo de render: 30 s (Kotlin) → `Error(RenderTimeout)`.
+### 7.1 Dos motores
 
-### 7.2 DOCX
+| Motor | Formatos | Cómo se muestra |
+|---|---|---|
+| **A. LibreOffice embebido** (LibreOfficeKit, MPL-2.0) | `.pptx .ppt .ppsx .pps .odp .docx .doc .odt .rtf` | Se convierte a PDF en el dispositivo y se abre con el visor de PDF de §6 |
+| **B. WebView aislado** (§4.3) | `.xlsx .xls .ods .csv` siempre. `.docx`/`.pptx` solo como respaldo si A no está disponible | HTML generado por JS vendorizado |
 
-`docx.renderAsync(buffer, container, null, { inWrapper: true, breakPages: true, ignoreLastRenderedPageBreak: true, useBase64URL: false })`.
-Ancho adaptado a pantalla con `<meta viewport>`; zoom por pellizco nativo del WebView. Búsqueda con `WebView.findAllAsync`.
+Por qué A: es el mismo motor de render que LibreOffice Impress/Writer, la mayor fidelidad disponible sin
+conexión y con licencia libre; incluye fuentes métricamente compatibles con las de Microsoft (Carlito por
+Calibri, Caladea por Cambria, Liberation por Arial/Times/Courier), así el texto no se descuadra. Y reutiliza
+un único visor ya probado (zoom, búsqueda, compartir, imprimir).
 
-### 7.3 Hojas de cálculo
+**Límites que hay que comunicar en la app y en el README (no son bugs):** las diapositivas son estáticas
+(sin animaciones, transiciones, vídeo ni audio); una fuente no incrustada y sin equivalente se sustituye;
+no se muestran las notas del orador.
+
+### 7.2 Spike obligatorio (Fase 5, antes de escribir el visor de ofimática)
+
+El integrador no debe fiarse de este documento para los detalles de LibreOfficeKit: **leer las fuentes reales**
+(`android/Bootstrap` y `android/README` del repositorio `core` de LibreOffice, y como referencia de cableado
+el proyecto `qscr/libre_office_kit_converter_plugin`). Pasos:
+
+1. Obtener la librería nativa (`liblo-native-code.so` y dependencias) y sus assets para `arm64-v8a` y
+   `x86_64` (emulador de CI) desde una compilación oficial o reproducible de LibreOffice para Android.
+   Versión estable más reciente. Las clases Java puente (`org.libreoffice.kit.*`) se copian de `core` conservando
+   su cabecera de licencia.
+2. Los binarios **no se suben a git** (superan el límite de GitHub). `scripts/fetch-lokit.sh` los descarga de
+   una URL fijada, verifica SHA-256 y los deja en `app/src/main/jniLibs/` y `assets/` (ambos en `.gitignore`);
+   la CI los cachea. Origen, versión, hash y licencia en `THIRD_PARTY.md`.
+3. Prototipo mínimo: convertir cada presentación de prueba (§11.1) a PDF dentro del emulador de CI.
+
+**Criterios de aceptación (todos):**
+- [ ] Cada fixture `.pptx` y `.ppt` produce un PDF con tantas páginas como diapositivas.
+- [ ] Comparación visual: primera diapositiva de cada fixture frente a su PNG de referencia (exportado desde
+      PowerPoint/LibreOffice de escritorio y versionado), diferencia estructural aceptable (SSIM ≥ 0,90).
+- [ ] 30 diapositivas en < 25 s en el emulador; arranque en frío del motor < 8 s.
+- [ ] Funciona sin permiso `INTERNET` y `check-apk.sh` sigue pasando.
+- [ ] Matar el proceso conversor a mitad de conversión no cierra la app.
+- [ ] APK `arm64-v8a` de release ≤ 250 MB (anotar el tamaño real).
+
+**Si no se cumple:** no improvisar. Anotar en `docs/DECISIONS.md` qué falló, implementar el respaldo de §7.6 y
+avisar al usuario de que la fidelidad será parcial y de que `.ppt` no estará disponible.
+
+### 7.3 Proceso conversor
+
+LibreOffice es código nativo grande que analiza archivos no confiables: **nunca corre en el proceso de la UI.**
+
+- `ConverterService`: `Service` enlazado, `android:exported="false"`, `android:process=":converter"`.
+  Un fallo nativo mata solo ese proceso. La app no tiene permisos ni red, así que el proceso tampoco.
+- Interfaz por `Messenger` (sin AIDL público): `CONVERT(inputPath, outputPath, filterHint)` →
+  `PROGRESS` / `DONE(pageCount)` / `FAILED(code)`. El servicio valida que ambas rutas, ya canonicalizadas,
+  estén dentro de `cacheDir/open/` y `cacheDir/converted/`; cualquier otra → `FAILED`.
+- `OfficeConverter` (lado UI, `data/office/`): enlaza bajo demanda, **una conversión a la vez** (`Mutex`),
+  tiempo máximo 120 s. Al vencer o cancelar: desenlazar y `Process.killProcess(pid del conversor)`.
+  `onServiceDisconnected` / `onBindingDied` / `DeadObjectException` → `Failure(ConverterCrashed)` con "Reintentar"
+  (un reintento automático como máximo).
+- Inicialización de LibreOffice una vez por vida del proceso; el proceso se libera tras 60 s sin uso
+  (desenlazar) para devolver memoria.
+- Perfil de LibreOffice en `filesDir/lo_profile/`, creado por la app con configuración fija:
+  seguridad de macros en el nivel máximo (no ejecutar nunca), sin actualización automática de vínculos
+  externos, sin recuperación de documentos, sin diálogos. Comprobar con el fixture `macro.pptm` y
+  `external-link.pptx` que no se ejecuta ni se resuelve nada.
+- Exportación: filtro PDF de Impress/Writer, calidad de imagen JPEG 90, sin reducir resolución por debajo de 220 ppp,
+  marcadores sí, notas no, diapositivas ocultas no.
+- Caché de resultados: `cacheDir/converted/<sha256 del archivo de entrada>.pdf`. Reabrir el mismo archivo es
+  instantáneo. Tope 300 MB con expulsión del menos usado; esta carpeta **no** se borra al iniciar (excepción a §4.2).
+- Antes de convertir: espacio libre ≥ 3 × tamaño de entrada + 50 MB; si no, `NoSpace`.
+- Si el dispositivo no tiene una ABI con librería incluida → `ConverterUnavailable` → respaldo §7.6.
+
+### 7.4 Experiencia de apertura
+
+`OfficeViewerViewModel`: `Converting(progreso indeterminado, nombre)` → `Ready(pdfFile)` → navega al visor de PDF
+con `presentationMode = true` para presentaciones (§6.3). Pantalla de conversión según `docs/DESIGN.md` §6.4,
+con botón **Cancelar**. Compartir y "Guardar copia" entregan el **archivo original**; se añade la acción
+"Exportar como PDF" que entrega el convertido.
+
+### 7.5 Hojas de cálculo y texto (motor B)
+
+Página anfitriona `assets/viewer/` (`index.html` + `viewer.js` + `viewer.css` + `vendor/`), sin `eval`, sin scripts
+en línea, sin recursos externos. `viewer.js` lee `?kind=…&nonce=…`, hace `fetch('/doc/<nonce>')`, renderiza y
+notifica `rendered` o `error:<código>`; todo dentro de `try/catch` + `window.onerror` + `unhandledrejection`.
+Tiempo máximo 30 s → `RenderTimeout`.
 
 `XLSX.read(buffer, { type: 'array', dense: true, cellFormula: false, cellHTML: false, sheetRows: 2001 })`.
-Pestañas de hojas abajo. Tabla HTML construida con `textContent` (nunca `innerHTML` con datos del archivo).
-Máx. 2 000 filas × 100 columnas por hoja, con aviso "Mostrando las primeras 2 000 filas". CSV pasa por el mismo camino.
+Pestañas de hojas abajo. Tabla construida con `textContent` (nunca `innerHTML` con datos del archivo).
+Máx. 2 000 filas × 100 columnas por hoja con aviso. Búsqueda con `WebView.findAllAsync`.
 
-### 7.4 PPTX
+Texto plano: `TextLoader` detecta BOM/UTF-8, respaldo ISO-8859-1; `LazyColumn` por líneas con `SelectionContainer`.
 
-1. **Spike (máx. medio día):** evaluar una librería JS de render de PPTX (p. ej. `pptx-preview`). Se adopta solo si:
-   licencia permisiva (MIT/Apache/BSD), funciona 100 % sin red bajo la CSP de §4.3, sin `eval`, y renderiza
-   correctamente los 3 PPTX de prueba. Documentar resultado en `docs/DECISIONS.md`.
-2. **Respaldo garantizado (implementar siempre):** "vista simplificada" en `viewer.js` con JSZip + `DOMParser`:
-   por cada `ppt/slides/slideN.xml` (ordenadas según `presentation.xml`), una tarjeta 16:9 con los párrafos `a:t`
-   (primer marcador de título como encabezado, viñetas por nivel) y las imágenes referenciadas en
-   `slideN.xml.rels` como `blob:`. Todo con `textContent`. Aviso visible "Vista simplificada".
+### 7.6 Respaldo si el motor A no está disponible
 
-### 7.5 Texto
-
-`TextLoader`: detecta BOM/UTF-8, respaldo ISO-8859-1; divide en líneas; `LazyColumn` con `SelectionContainer`,
-fuente monoespaciada opcional, tamaño de letra ajustable.
+- `.docx`: `docx-preview` en el WebView (`renderAsync` con `breakPages: true`, `useBase64URL: false`).
+- `.pptx`: evaluar `@aiden0z/pptx-renderer`, `pptx-preview` y `pptxviewjs`; adoptar la de mejor resultado sobre
+  los fixtures solo si tiene licencia permisiva, funciona sin red bajo la CSP de §4.3 y no usa `eval`.
+  Mostrar aviso permanente "Vista aproximada".
+- `.ppt`, `.doc`, `.odt`, `.odp`, `.rtf`: pantalla "No compatible en este dispositivo" + **Abrir con otra app**.
 
 ---
 
@@ -421,22 +494,17 @@ data class RecentEntity(
 
 `UnsupportedSource`, `UnsupportedFormat`, `LegacyOfficeFormat`, `TooLarge`, `NoSpace`, `AccessLost`, `Corrupt`,
 `PasswordRequired`, `WrongPassword`, `ZipBomb`, `RenderTimeout`, `RendererCrashed`, `WebViewUnavailable`,
-`OutOfMemory`, `ScannerUnavailable`, `SaveFailed`, `Closed`, `Unknown`. Cada uno tiene su `@StringRes` en español
+`OutOfMemory`, `ConverterUnavailable`, `ConverterCrashed`, `ConversionTimeout`, `ScannerUnavailable`, `SaveFailed`, `Closed`, `Unknown`. Cada uno tiene su `@StringRes` en español
 claro y sin tecnicismos. Crear el WebView dentro de `try/catch (Throwable)` → `WebViewUnavailable`.
 
 ---
 
 ## 10. Diseño de interfaz
 
-- Material 3, color dinámico (Android 12+) con paleta de respaldo sobria; tema claro/oscuro; tipografía del sistema.
-- **Inicio:** barra superior "Lector" + ajustes. Lista de recientes (icono por tipo, nombre, fecha relativa, tamaño;
-  deslizar para quitar). Estado vacío con ilustración vectorial simple y dos botones grandes.
-  FAB extendido **Escanear**; botón **Abrir archivo** (SAF con los MIME de §1.1).
-- **Visores:** contenido a pantalla completa; barras translúcidas que se ocultan con un toque.
-- **Ajustes:** tema, pantalla encendida, ocultar en recientes, borrar recientes, acerca de (versión, licencias,
-  "Ver último error" si existe `crash/last.txt`, con botón copiar).
-- Accesibilidad: `contentDescription` en todos los iconos, objetivos táctiles ≥ 48 dp, contraste AA, respeta tamaño de fuente del sistema, funciona con TalkBack en Inicio y Ajustes.
-- Tablet/plegable/apaisado: los visores usan todo el ancho; Inicio limita el ancho de lista a 600 dp centrado.
+La especificación visual y de interacción completa está en [`docs/DESIGN.md`](DESIGN.md) y es **obligatoria**:
+tokens de color, tipografía, formas, movimiento, anatomía de cada pantalla y todos los textos.
+Referencia visual: `docs/design/mockup.html` y `docs/design/mockup.png`.
+No usar los colores, formas ni tipografía por defecto de Material 3; el tema se construye desde esos tokens.
 
 ---
 
@@ -447,8 +515,10 @@ claro y sin tecnicismos. Crear el WebView dentro de `try/catch (Throwable)` → 
 Generarlos con un script reproducible en `scripts/make-fixtures.py` y versionar los resultados:
 `simple.pdf` (3 pág.), `long.pdf` (500 pág.), `mixed-sizes.pdf`, `encrypted.pdf` (clave `test`),
 `truncated.pdf`, `empty.pdf` (0 bytes), `fake.pdf` (un ZIP renombrado), `simple.docx`, `images.docx`,
-`simple.xlsx` (3 hojas), `big.xlsx` (10 000 filas), `legacy.xls`, `simple.pptx`, `zipbomb.docx`
-(entrada que descomprime > 300 MB), `traversal.docx` (entrada `../../x`), `legacy.doc` (cabecera OLE2),
+`simple.xlsx` (3 hojas), `big.xlsx` (10 000 filas), `legacy.xls`,
+presentaciones: `simple.pptx`, `theme-gradients.pptx`, `charts-tables.pptx`, `smartart.pptx`, `fonts-calibri.pptx`,
+`legacy.ppt`, `macro.pptm`, `external-link.pptx`, `legacy.doc` real, cada una con su PNG de referencia de la diapositiva 1, `zipbomb.docx`
+(entrada que descomprime > 300 MB), `traversal.docx` (entrada `../../x`),
 `utf8.txt`, `latin1.txt`, `binary.bin`.
 
 ### 11.2 Unitarias (JVM / Robolectric) — obligatorias
@@ -462,7 +532,8 @@ desde `SavedStateHandle`, doble toque), `RecentsRepository` (upsert, purga a 100
 
 `FrameworkPdfEngine`: abre/renderiza cada PDF válido; `truncated`/`empty`/`fake` → `Corrupt` sin excepción;
 `encrypted` → `PasswordRequired`; 200 renders concurrentes + `close()` a mitad → sin crash;
-PDF de `JpegPdfWriter` se abre y tiene N páginas. WebView: `simple.docx`/`simple.xlsx`/`simple.pptx` emiten `rendered`;
+PDF de `JpegPdfWriter` se abre y tiene N páginas. Conversor: criterios de §7.2; `zipbomb`/`truncated` → `Failure` sin crash; matar `:converter` a mitad → `ConverterCrashed` y la UI sigue viva.
+WebView: `simple.xlsx` emite `rendered`;
 petición a `https://example.com/` y a `/doc/<nonce-incorrecto>` son bloqueadas; `zipbomb` se rechaza antes del WebView.
 UI Compose: inicio vacío, abrir fixture por intent `VIEW`, rotar conserva página, recientes muestra el archivo.
 
@@ -498,18 +569,19 @@ No empezar una fase con la anterior en rojo. Si algo de este plan resulta imposi
 | 0 | **Entorno y esqueleto.** Instalar Android SDK (cmdline-tools) si falta; si la red lo impide, apoyarse en la CI de GitHub para compilar. Proyecto Gradle, catálogo de versiones, `.gitignore`, tema, `MainActivity` vacía, `AppContainer`, `Outcome`/`DocError`, `Log`, `CrashRecorder`, StrictMode, `ci.yml`, `check-apk.sh`. | APK debug generado en CI; `check-apk.sh` pasa. |
 | 1 | **Ingesta.** `UriIntake`, `MagicSniffer`, `ZipInspector`, `FileNameSanitizer`, fixtures, limpieza de caché, filtros de intent, `onNewIntent`. | Tests §11.2 de ingesta en verde. |
 | 2 | **Motor PDF.** `FrameworkPdfEngine`, caché, tests instrumentados. | Tests §11.3 de PDF en verde. |
-| 3 | **Visor PDF.** Lista, zoom, navegación, restauración de estado, compartir/guardar/imprimir. | PDF de 500 páginas fluido; rotar conserva página. |
+| 3 | **Visor PDF.** Tema y componentes base de `docs/DESIGN.md`. Lista, zoom, navegación, restauración de estado, compartir/guardar/imprimir. | PDF de 500 páginas fluido; rotar conserva página. |
 | 4 | **Inicio y recientes.** Room, DataStore, Home, Ajustes, manejo de acceso perdido. | Flujo completo abrir → recientes → reabrir. |
-| 5 | **Visor ofimática.** `SecureWebViewFactory`, página anfitriona, DOCX, hojas, texto. | Tests de bloqueo de red y de render en verde. |
-| 6 | **PPTX.** Respaldo simplificado, luego spike de librería. | `simple.pptx` se muestra; decisión documentada. |
+| 5 | **Spike LibreOffice** (§7.2). `fetch-lokit.sh`, prototipo de conversión, medición. | Criterios de §7.2 marcados uno a uno en `docs/DECISIONS.md`: adoptado o respaldo. |
+| 6 | **Visor ofimática.** `ConverterService`, `OfficeConverter`, caché de conversiones, modo presentación del visor; `SecureWebViewFactory` + hojas de cálculo + texto. | Fixtures de presentación se abren con fidelidad; tests de bloqueo de red en verde. |
 | 7 | **Escáner.** ML Kit, guardado MediaStore, pendientes, respaldo con `JpegPdfWriter`. | Escaneo guardado en `Documents/Lector` y abierto. |
 | 8 | **Endurecimiento.** R8, firma, verificación de dependencias, Dependabot, accesibilidad, `values-en`, búsqueda/contraseña PDF en API ≥ 35, modo noche, `docs/QA.md`, `docs/SIGNING.md`, `THIRD_PARTY.md`, README. | Release firmado en CI; revisión de seguridad (§4) punto por punto anotada en `docs/SECURITY_REVIEW.md`. |
-| 9 | *(Opcional, solo si el usuario lo pide)* `.doc`/`.ppt` como solo-texto con Apache POI (`poi` + `poi-scratchpad`), o `PdfRendererPreV` para búsqueda/contraseña en Android 11–14. | — |
+| 9 | *(Opcional, solo si el usuario lo pide)* `PdfRendererPreV` para búsqueda/contraseña en Android 11-14. | — |
 
 ### Criterio de terminado global
 
 - [ ] `aapt2 dump permissions` del APK release no lista ningún permiso.
 - [ ] Ningún fixture (incluidos los maliciosos) provoca un crash; todos terminan en contenido o en `ErrorPane`.
 - [ ] Rotar, pasar a segundo plano y "No conservar actividades" activado no pierden el documento ni la página.
+- [ ] Cada pantalla coincide con `docs/DESIGN.md` en claro y oscuro (capturas en `docs/design/screens/`).
 - [ ] Lint sin avisos, todos los tests en verde en CI, APK release firmado e instalable.
 - [ ] `docs/SECURITY_REVIEW.md` con cada control de §4 marcado y la evidencia (test o archivo) que lo demuestra.
