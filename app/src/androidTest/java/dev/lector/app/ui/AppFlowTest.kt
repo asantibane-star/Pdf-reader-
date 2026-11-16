@@ -13,6 +13,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dev.lector.app.Fixtures
 import dev.lector.app.MainActivity
+import dev.lector.app.R
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -35,9 +36,12 @@ class AppFlowTest {
     }
 
     @Test fun emptyHomeIsShownFirst() {
+        // El emulador puede estar en inglés: los textos se leen de los recursos de la app, no se escriben a mano.
+        val open = Fixtures.target.getString(R.string.home_open)
+        val scan = Fixtures.target.getString(R.string.home_scan)
         ActivityScenario.launch(MainActivity::class.java).use {
-            await("Abrir")
-            compose.onNodeWithText("Escanear").assertIsDisplayed()
+            await(open)
+            compose.onNodeWithText(scan).assertIsDisplayed()
         }
     }
 
