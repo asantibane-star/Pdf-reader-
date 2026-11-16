@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home -->
+    <string name="home_open">Open</string>
+    <string name="home_scan">Scan</string>
+    <string name="home_empty_title">Your documents will appear here</string>
+    <string name="home_empty_body">Open a file from your phone or scan a paper to save it as a PDF.</string>
+    <string name="home_settings">Settings</string>
+    <string name="continue_page">Page %1$d of %2$d</string>
+    <string name="group_today">Today</string>
+    <string name="group_week">This week</string>
+    <string name="group_month">This month</string>
+    <string name="group_older">Earlier</string>
+    <string name="recent_removed">Removed from the list</string>
+    <string name="action_undo">Undo</string>
+    <string name="recent_share">Share</string>
+    <string name="recent_remove">Remove from list</string>
+    <string name="time_now">Just now</string>
+    <string name="time_minutes_ago">%1$d min ago</string>
+    <string name="time_hours_ago">%1$d h ago</string>
+    <string name="time_yesterday">Yesterday</string>
+
+    <!-- Common actions -->
+    <string name="action_retry">Try again</string>
+    <string name="action_back">Back</string>
+    <string name="action_open_with">Open with another app</string>
+    <string name="action_find_file">Find file</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_open">Open</string>
+    <string name="action_share">Share</string>
+
+    <!-- Errors -->
+    <string name="err_unsupported">Lector cannot open this type of file.</string>
+    <string name="err_unsupported_source">Lector only opens files you pick in the selector or that another app shares with it.</string>
+    <string name="err_legacy_office">This old format cannot be shown on this phone. Open it with another app.</string>
+    <string name="err_too_large">The file is too large to open here.</string>
+    <string name="err_no_space">There is not enough space on the phone. Free up space and try again.</string>
+    <string name="err_access_lost">You no longer have access to this file. Find it again to open it.</string>
+    <string name="err_corrupt">The file is damaged or incomplete.</string>
+    <string name="err_password_required">This PDF is password protected.</string>
+    <string name="err_password_unsupported">This PDF has a password and this version of Android cannot open it here.</string>
+    <string name="err_password_wrong">Wrong password.</string>
+    <string name="err_zip_bomb">The file is too complex to open safely.</string>
+    <string name="err_render_timeout">The document took too long to display.</string>
+    <string name="err_renderer_crashed">The viewer closed unexpectedly. Try again.</string>
+    <string name="err_converter_crashed">The document could not be prepared.</string>
+    <string name="err_conversion_timeout">The document took too long to prepare.</string>
+    <string name="err_converter_unavailable">This phone cannot display this format.</string>
+    <string name="err_webview">A system component (WebView) is missing to display this file.</string>
+    <string name="err_out_of_memory">There is not enough memory to display this document.</string>
+    <string name="err_scanner_save">The scan could not be prepared.</string>
+    <string name="err_scanner">The advanced scanner is not available. Use simple mode.</string>
+    <string name="err_save">The PDF could not be saved.</string>
+    <string name="err_closed">The document is already closed.</string>
+    <string name="err_unknown">Something went wrong while opening the file.</string>
+    <string name="err_title">The file could not be opened</string>
+    <string name="err_launch_failed">No app can do that.</string>
+
+    <!-- Viewers -->
+    <string name="viewer_back">Back</string>
+    <string name="viewer_search">Search</string>
+    <string name="viewer_more">More options</string>
+    <string name="viewer_page_state">Page %1$d of %2$d</string>
+    <string name="viewer_page_slider">Page slider</string>
+    <string name="viewer_show_controls">Show controls</string>
+    <string name="viewer_go_to_page">Go to page</string>
+    <string name="viewer_go_to_page_label">Page number</string>
+    <string name="viewer_go_to_page_error">Enter a number between 1 and %1$d.</string>
+    <string name="viewer_go">Go</string>
+    <string name="viewer_save_copy">Save a copy</string>
+    <string name="viewer_print">Print</string>
+    <string name="viewer_night_mode">Night mode</string>
+    <string name="viewer_keep_screen_on">Keep screen on</string>
+    <string name="viewer_loading_page">Loading page</string>
+    <string name="viewer_saved_copy">Copy saved</string>
+    <string name="viewer_search_hint">Search in document</string>
+    <string name="viewer_search_count">%1$d of %2$d</string>
+    <string name="viewer_search_none">No results</string>
+    <string name="viewer_search_previous">Previous result</string>
+    <string name="viewer_search_next">Next result</string>
+    <string name="viewer_search_close">Close search</string>
+    <string name="viewer_password_title">Protected PDF</string>
+    <string name="viewer_password_label">Password</string>
+    <string name="viewer_password_wrong">Wrong password.</string>
+    <string name="viewer_approx_note">Approximate view</string>
+    <string name="viewer_approx_detail">This view may differ from the original. Presentations are shown without animations or video.</string>
+    <string name="viewer_unavailable_title">Not supported on this device</string>
+    <string name="viewer_unavailable_body">This format needs a component that Lector does not include yet. You can open it with another app.</string>
+    <string name="viewer_sheet_label">Sheet %1$d</string>
+    <string name="viewer_sheet_truncated">Only the first %1$s rows and %2$s columns are shown.</string>
+    <string name="viewer_text_size">Text size</string>
+    <string name="viewer_text_larger">Larger</string>
+    <string name="viewer_text_smaller">Smaller</string>
+    <string name="link_open_title">Open link</string>
+    <string name="link_open_browser">Open in browser</string>
+    <string name="viewer_opening_title">Opening document</string>
+    <string name="viewer_opening_body">Just a moment.</string>
+
+    <!-- Scanner -->
+    <string name="scan_name_title">Save scan</string>
+    <string name="scan_name_label">Name</string>
+    <plurals name="scan_pages">
+        <item quantity="one">%1$d page</item>
+        <item quantity="other">%1$d pages</item>
+    </plurals>
+    <string name="scan_save">Save</string>
+    <string name="scan_discard">Discard</string>
+    <string name="scan_discard_title">Discard the scan?</string>
+    <string name="scan_discard_body">The scanned pages will be lost.</string>
+    <string name="scan_saved">Saved in Documents/Lector</string>
+    <string name="scan_fallback_notice">Advanced scanner not available</string>
+    <string name="scan_pending_title">You have an unsaved scan</string>
+    <string name="scan_pending_body">It was left pending last time. Do you want to save it?</string>
+    <string name="scan_save_elsewhere">Save elsewhere</string>
+    <string name="scan_simple_title">Scan</string>
+    <string name="scan_camera">Camera</string>
+    <string name="scan_gallery">Gallery</string>
+    <string name="scan_create_pdf">Create PDF</string>
+    <string name="scan_remove_page">Remove page</string>
+    <string name="scan_page_number">Page %1$d</string>
+    <string name="scan_move_up">Move earlier</string>
+    <string name="scan_move_down">Move later</string>
+    <string name="scan_empty_title">Add pages</string>
+    <string name="scan_empty_body">Take a photo or choose images from the gallery to create a PDF.</string>
+    <string name="scan_working">Creating PDF</string>
+    <string name="scan_failed_page">One of the images could not be read.</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_group_appearance">Appearance</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_dynamic_color">Use system colors</string>
+    <string name="settings_group_reading">Reading</string>
+    <string name="settings_keep_screen_on">Keep screen on</string>
+    <string name="settings_hide_in_recents">Hide content in recent apps</string>
+    <string name="settings_group_data">Data</string>
+    <string name="settings_clear_recents">Clear recents</string>
+    <string name="settings_clear_recents_title">Clear recents?</string>
+    <string name="settings_clear_recents_body">All documents will be removed from the list. Your files are not deleted.</string>
+    <string name="settings_group_about">About</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_licenses">Licenses</string>
+    <string name="settings_last_error">View last error</string>
+    <string name="settings_slides_note">Presentations are shown without animations or video.</string>
+    <string name="settings_privacy_note">Lector has no internet access and shows no ads. Your documents never leave the phone.</string>
+    <string name="last_error_title">Last error</string>
+    <string name="last_error_clear">Clear log</string>
+    <string name="licenses_title">Licenses</string>
+
+    <!-- Lost access -->
+    <string name="lost_access_title">You no longer have access to this file</string>
+    <string name="lost_access_remove">Remove from list</string>
+
+    <!-- Accessibility -->
+    <string name="a11y_recent_actions">More actions</string>
+</resources>

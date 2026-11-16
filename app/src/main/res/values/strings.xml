@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">Lector</string>
+
+    <!-- Inicio -->
+    <string name="home_title" translatable="false">Lector</string>
+    <string name="home_open">Abrir</string>
+    <string name="home_scan">Escanear</string>
+    <string name="home_empty_title">Tus documentos aparecerán aquí</string>
+    <string name="home_empty_body">Abre un archivo del teléfono o escanea un papel para guardarlo como PDF.</string>
+    <string name="home_settings">Ajustes</string>
+    <string name="continue_page">Página %1$d de %2$d</string>
+    <string name="group_today">Hoy</string>
+    <string name="group_week">Esta semana</string>
+    <string name="group_month">Este mes</string>
+    <string name="group_older">Antes</string>
+    <string name="recent_removed">Quitado de la lista</string>
+    <string name="action_undo">Deshacer</string>
+    <string name="recent_share">Compartir</string>
+    <string name="recent_remove">Quitar de la lista</string>
+    <string name="time_now">Ahora</string>
+    <string name="time_minutes_ago">Hace %1$d min</string>
+    <string name="time_hours_ago">Hace %1$d h</string>
+    <string name="time_yesterday">Ayer</string>
+    <string name="meta_separator" translatable="false">%1$s · %2$s</string>
+
+    <!-- Acciones comunes -->
+    <string name="action_retry">Reintentar</string>
+    <string name="action_back">Volver</string>
+    <string name="action_open_with">Abrir con otra app</string>
+    <string name="action_find_file">Buscar archivo</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_open">Abrir</string>
+    <string name="action_share">Compartir</string>
+
+    <!-- Errores (DESIGN §7) -->
+    <string name="err_unsupported">Lector no puede abrir este tipo de archivo.</string>
+    <string name="err_unsupported_source">Lector solo abre archivos que elijas en el selector o que otra app comparta con él.</string>
+    <string name="err_legacy_office">Este formato antiguo no se puede mostrar en este teléfono. Ábrelo con otra app.</string>
+    <string name="err_too_large">El archivo es demasiado grande para abrirlo aquí.</string>
+    <string name="err_no_space">No queda espacio suficiente en el teléfono. Libera espacio e inténtalo de nuevo.</string>
+    <string name="err_access_lost">Ya no hay acceso a este archivo. Búscalo de nuevo para abrirlo.</string>
+    <string name="err_corrupt">El archivo está dañado o incompleto.</string>
+    <string name="err_password_required">Este PDF está protegido con contraseña.</string>
+    <string name="err_password_unsupported">Este PDF tiene contraseña y esta versión de Android no permite abrirlo aquí.</string>
+    <string name="err_password_wrong">Contraseña incorrecta.</string>
+    <string name="err_zip_bomb">El archivo es demasiado complejo para abrirlo de forma segura.</string>
+    <string name="err_render_timeout">El documento tardó demasiado en mostrarse.</string>
+    <string name="err_renderer_crashed">El visor se cerró de forma inesperada. Inténtalo de nuevo.</string>
+    <string name="err_converter_crashed">No se pudo preparar el documento.</string>
+    <string name="err_conversion_timeout">El documento tardó demasiado en prepararse.</string>
+    <string name="err_converter_unavailable">Este teléfono no puede mostrar este formato.</string>
+    <string name="err_webview">Falta un componente del sistema (WebView) para mostrar este archivo.</string>
+    <string name="err_out_of_memory">No hay memoria suficiente para mostrar este documento.</string>
+    <string name="err_scanner_save">No se pudo preparar el escaneo.</string>
+    <string name="err_scanner">El escáner avanzado no está disponible. Usa el modo simple.</string>
+    <string name="err_save">No se pudo guardar el PDF.</string>
+    <string name="err_closed">El documento ya se cerró.</string>
+    <string name="err_unknown">Algo salió mal al abrir el archivo.</string>
+    <string name="err_title">No se pudo abrir el archivo</string>
+    <string name="err_launch_failed">No hay ninguna app que pueda hacerlo.</string>
+
+    <!-- Visores -->
+    <string name="viewer_back">Volver</string>
+    <string name="viewer_search">Buscar</string>
+    <string name="viewer_more">Más opciones</string>
+    <string name="viewer_page_counter" translatable="false">%1$d / %2$d</string>
+    <string name="viewer_page_state">Página %1$d de %2$d</string>
+    <string name="viewer_page_slider">Deslizador de páginas</string>
+    <string name="viewer_show_controls">Mostrar controles</string>
+    <string name="viewer_go_to_page">Ir a página</string>
+    <string name="viewer_go_to_page_label">Número de página</string>
+    <string name="viewer_go_to_page_error">Escribe un número entre 1 y %1$d.</string>
+    <string name="viewer_go">Ir</string>
+    <string name="viewer_save_copy">Guardar copia</string>
+    <string name="viewer_print">Imprimir</string>
+    <string name="viewer_night_mode">Modo noche</string>
+    <string name="viewer_keep_screen_on">Mantener pantalla encendida</string>
+    <string name="viewer_loading_page">Cargando página</string>
+    <string name="viewer_saved_copy">Copia guardada</string>
+    <string name="viewer_search_hint">Buscar en el documento</string>
+    <string name="viewer_search_count">%1$d de %2$d</string>
+    <string name="viewer_search_none">Sin resultados</string>
+    <string name="viewer_search_previous">Resultado anterior</string>
+    <string name="viewer_search_next">Resultado siguiente</string>
+    <string name="viewer_search_close">Cerrar búsqueda</string>
+    <string name="viewer_password_title">PDF protegido</string>
+    <string name="viewer_password_label">Contraseña</string>
+    <string name="viewer_password_wrong">Contraseña incorrecta.</string>
+    <string name="viewer_approx_note">Vista aproximada</string>
+    <string name="viewer_approx_detail">Esta vista puede diferir del original. Las presentaciones se muestran sin animaciones ni vídeo.</string>
+    <string name="viewer_unavailable_title">No compatible en este dispositivo</string>
+    <string name="viewer_unavailable_body">Este formato necesita un componente que Lector no incluye todavía. Puedes abrirlo con otra app.</string>
+    <string name="viewer_sheet_label">Hoja %1$d</string>
+    <string name="viewer_sheet_truncated">Se muestran solo las primeras %1$s filas y %2$s columnas.</string>
+    <string name="viewer_text_size">Tamaño del texto</string>
+    <string name="viewer_text_larger">Más grande</string>
+    <string name="viewer_text_smaller">Más pequeño</string>
+    <string name="link_open_title">Abrir enlace</string>
+    <string name="link_open_browser">Abrir en el navegador</string>
+    <string name="viewer_opening_title">Abriendo documento</string>
+    <string name="viewer_opening_body">Un instante.</string>
+
+    <!-- Escáner -->
+    <string name="scan_name_title">Guardar escaneo</string>
+    <string name="scan_name_label">Nombre</string>
+    <plurals name="scan_pages">
+        <item quantity="one">%1$d página</item>
+        <item quantity="other">%1$d páginas</item>
+    </plurals>
+    <string name="scan_save">Guardar</string>
+    <string name="scan_discard">Descartar</string>
+    <string name="scan_discard_title">¿Descartar el escaneo?</string>
+    <string name="scan_discard_body">Se perderán las páginas escaneadas.</string>
+    <string name="scan_saved">Guardado en Documentos/Lector</string>
+    <string name="scan_fallback_notice">Escáner avanzado no disponible</string>
+    <string name="scan_pending_title">Tienes un escaneo sin guardar</string>
+    <string name="scan_pending_body">Quedó pendiente la última vez. ¿Quieres guardarlo?</string>
+    <string name="scan_save_elsewhere">Guardar en otra ubicación</string>
+    <string name="scan_simple_title">Escanear</string>
+    <string name="scan_camera">Cámara</string>
+    <string name="scan_gallery">Galería</string>
+    <string name="scan_create_pdf">Crear PDF</string>
+    <string name="scan_remove_page">Quitar página</string>
+    <string name="scan_page_number">Página %1$d</string>
+    <string name="scan_move_up">Mover antes</string>
+    <string name="scan_move_down">Mover después</string>
+    <string name="scan_empty_title">Añade páginas</string>
+    <string name="scan_empty_body">Haz una foto o elige imágenes de la galería para crear un PDF.</string>
+    <string name="scan_working">Creando PDF</string>
+    <string name="scan_failed_page">No se pudo leer una de las imágenes.</string>
+
+    <!-- Ajustes -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_group_appearance">Apariencia</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_theme_system">Sistema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Oscuro</string>
+    <string name="settings_dynamic_color">Usar colores del sistema</string>
+    <string name="settings_group_reading">Lectura</string>
+    <string name="settings_keep_screen_on">Mantener pantalla encendida</string>
+    <string name="settings_hide_in_recents">Ocultar contenido en apps recientes</string>
+    <string name="settings_group_data">Datos</string>
+    <string name="settings_clear_recents">Borrar recientes</string>
+    <string name="settings_clear_recents_title">¿Borrar recientes?</string>
+    <string name="settings_clear_recents_body">Se quitarán todos los documentos de la lista. Los archivos no se borran.</string>
+    <string name="settings_group_about">Acerca de</string>
+    <string name="settings_version">Versión</string>
+    <string name="settings_licenses">Licencias</string>
+    <string name="settings_last_error">Ver último error</string>
+    <string name="settings_slides_note">Las presentaciones se muestran sin animaciones ni vídeo.</string>
+    <string name="settings_privacy_note">Lector no tiene acceso a internet ni muestra anuncios. Tus documentos no salen del teléfono.</string>
+    <string name="last_error_title">Último error</string>
+    <string name="last_error_clear">Borrar registro</string>
+    <string name="licenses_title">Licencias</string>
+
+    <!-- Acceso perdido -->
+    <string name="lost_access_title">Ya no hay acceso a este archivo</string>
+    <string name="lost_access_remove">Quitar de la lista</string>
+
+    <!-- Accesibilidad -->
+    <string name="a11y_recent_actions">Más acciones</string>
+</resources>

@@ -1,0 +1,24 @@
+# Gradle / Android
+.gradle/
+build/
+*.iml
+.idea/
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Secretos y configuración local: NUNCA al repositorio
+local.properties
+*.jks
+*.keystore
+keystore.properties
+
+# Binarios de LibreOfficeKit (se descargan con scripts/fetch-lokit.sh; no caben en git)
+app/src/main/jniLibs/
+app/src/main/assets/lokit/
+
+# Temporales de pruebas y scripts
+*.log
+/tmp/
+__pycache__/

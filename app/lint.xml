@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Exclusiones de lint, cada una justificada. Todo lo demás es error (warningsAsErrors). -->
+<lint>
+    <!-- Las versiones se fijan a propósito en gradle/libs.versions.toml; Dependabot las actualiza. -->
+    <issue id="GradleDependency" severity="ignore" />
+    <issue id="NewerVersionAvailable" severity="ignore" />
+    <issue id="AndroidGradlePluginVersion" severity="ignore" />
+    <!-- PLAN §4.2 exige `cacheDir.usableSpace >= tamaño + 50 MB`. getAllocatableBytes contaría caché ajena como libre y
+         daría un margen optimista; usableSpace es la cota conservadora. -->
+    <issue id="UsableSpace" severity="ignore" />
+</lint>
