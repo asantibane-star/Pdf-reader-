@@ -84,8 +84,8 @@ android {
 
     sourceSets {
         // Esquemas de Room versionados y fixtures compartidos con las pruebas instrumentadas.
-        getByName("androidTest").assets.srcDir("$projectDir/schemas")
-        getByName("androidTest").assets.srcDir("src/test/resources")
+        getByName("androidTest").assets.directories.add("$projectDir/schemas")
+        getByName("androidTest").assets.directories.add("src/test/resources")
     }
 }
 
