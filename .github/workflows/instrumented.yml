@@ -1,6 +1,7 @@
 name: Pruebas instrumentadas
 
 on:
+  push:
   pull_request:
   workflow_dispatch:
 
