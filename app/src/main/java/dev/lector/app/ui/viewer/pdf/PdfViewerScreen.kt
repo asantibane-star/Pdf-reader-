@@ -84,7 +84,6 @@ import dev.lector.app.ui.theme.DarkLectorColors
 import dev.lector.app.ui.theme.LectorSizes
 import dev.lector.app.ui.theme.LectorSpacing
 import dev.lector.app.ui.theme.LectorTheme
-import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -228,7 +227,7 @@ private fun PdfContent(
     if (bottomSystem > stableBottom) stableBottom = bottomSystem
     val showPageBar = state.pageCount >= PAGE_BAR_MIN_PAGES
     val topInset = stableTop + LectorSpacing.barTopGap + LectorSizes.barHeight + LectorSpacing.pageGap
-    val bottomInset = stableBottom + (if (showPageBar) LectorSpacing.barBottomGap + LectorSizes.barHeight else 0.dp) + LectorSpacing.pageGap
+    val bottomInset = stableBottom + (if (showPageBar) LectorSpacing.barBottomGap + LectorSizes.barHeight else LectorSpacing.none) + LectorSpacing.pageGap
 
     // Página actual = la que contiene el centro de la vista.
     LaunchedEffect(list) {

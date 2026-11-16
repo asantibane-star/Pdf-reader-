@@ -39,7 +39,6 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.lector.app.R
 import dev.lector.app.domain.model.RecentDocument
@@ -58,6 +57,7 @@ import dev.lector.app.ui.common.RecentRow
 import dev.lector.app.ui.common.SheetRow
 import dev.lector.app.ui.common.StatePane
 import dev.lector.app.ui.common.SwipeToRemove
+import dev.lector.app.ui.theme.LectorMotion
 import dev.lector.app.ui.theme.LectorSizes
 import dev.lector.app.ui.theme.LectorSpacing
 import dev.lector.app.ui.theme.LectorTheme
@@ -252,7 +252,7 @@ private fun Modifier.animateEntrance(index: Int, play: Boolean): Modifier {
     val motion = LocalMotionEnabled.current
     val animate = play && motion && index < ENTRANCE_MAX_ROWS
     val progress = remember { Animatable(if (animate) 0f else 1f) }
-    val offsetPx = with(LocalDensity.current) { ENTRANCE_OFFSET_DP.dp.toPx() }
+    val offsetPx = with(LocalDensity.current) { LectorMotion.entranceOffset.toPx() }
     LaunchedEffect(animate) {
         if (animate) {
             delay(index * ENTRANCE_STAGGER_MS)
@@ -271,4 +271,3 @@ private const val ENTRANCE_WINDOW_MS = 700L
 private const val ENTRANCE_MAX_ROWS = 8
 private const val ENTRANCE_STAGGER_MS = 30L
 private const val ENTRANCE_MS = 240
-private const val ENTRANCE_OFFSET_DP = 8f

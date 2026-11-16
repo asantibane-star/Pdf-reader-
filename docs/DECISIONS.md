@@ -117,3 +117,31 @@ permite abrirlo aquí» y el botón de búsqueda no aparece. La Fase 9 (`PdfRend
 El manifiesto elimina `INTERNET`, `ACCESS_NETWORK_STATE` y el permiso
 `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` que AndroidX añade; el APK de release no declara ningún permiso
 (`scripts/check-apk.sh`).
+
+## 9. Verificación disponible y alcance real de las pruebas
+
+- **Pruebas unitarias (JVM + Robolectric): 117**, se ejecutan en cada build. Incluyen una prueba de humo que arranca la app real
+  (tema, fuentes, navegación, ingesta y visor de texto) y `ProjectRulesTest`, que convierte las reglas de `CLAUDE.md` en
+  comprobaciones automáticas.
+- **`PdfRenderer` no se puede ejecutar bajo Robolectric**: el motor PDF, el zoom y el render real solo se prueban en
+  `androidTest` (CI con emulador) y en `docs/QA.md`. Los ViewModels del visor se probaron con un motor falso.
+- **El visor web (`viewer.js` + bibliotecas vendorizadas) sí se ejecutó en Chromium real** con la CSP y el régimen de red del
+  WebView (`scripts/check-viewer.js`): hojas (`.xlsx`, `.xls`, `.csv`), Word y PowerPoint, sin peticiones externas.
+- **No se ejecutó nunca en un dispositivo ni emulador** (no había KVM). Es el principal riesgo residual: el comportamiento del
+  zoom táctil, el modo inmersivo, el escáner de ML Kit y el WebView real se verifican en `docs/QA.md`.
+- Capturas de las pantallas reales (claro/oscuro) en `docs/design/screens/`, generadas con Robolectric (`ScreenshotTest`).
+  No están el visor de PDF ni el escáner (necesitan `PdfRenderer` / Google Play Services).
+
+## 10. Cadena de suministro
+
+- `gradle/verification-metadata.xml` se generó con `--write-verification-metadata sha256` y se comprobó con un build limpio.
+  Si se añade una dependencia hay que regenerarlo.
+- Las acciones de GitHub usan etiquetas (`@v4`), **no SHA de commit** como pide PLAN §12: desde el entorno de construcción no se
+  podía consultar GitHub para resolverlos (y un SHA inventado rompería la CI). `scripts/pin-actions.sh` lo hace con red.
+
+## 11. Pendiente / siguiente paso
+
+1. Probar el APK en un teléfono con `docs/QA.md` y corregir lo que aparezca.
+2. Ejecutar `scripts/pin-actions.sh` y commitear.
+3. Retomar el spike de LibreOffice (§3) para presentaciones con fidelidad total y `.ppt`/`.doc`/`.odt`/`.odp`/`.rtf`.
+4. Crear el keystore de release (`docs/SIGNING.md`) y cargar los secrets.

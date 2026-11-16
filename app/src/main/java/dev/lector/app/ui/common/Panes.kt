@@ -31,6 +31,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
+import dev.lector.app.ui.theme.LectorPaper
 import dev.lector.app.ui.theme.LectorShapes
 import dev.lector.app.ui.theme.LectorSpacing
 import dev.lector.app.ui.theme.LectorTheme
@@ -124,7 +125,7 @@ fun SkeletonBox(modifier: Modifier = Modifier, shape: Shape = LectorShapes.Tile,
 @Composable
 fun PageSkeleton(modifier: Modifier = Modifier) {
     val label = stringResource(R.string.viewer_loading_page)
-    SkeletonBox(modifier = modifier.fillMaxWidth().semantics { contentDescription = label }, shape = LectorShapes.Page, color = androidx.compose.ui.graphics.Color.White)
+    SkeletonBox(modifier = modifier.fillMaxWidth().semantics { contentDescription = label }, shape = LectorShapes.Page, color = LectorPaper.white)
 }
 
 /** Esqueleto de Inicio: tarjeta destacada y cuatro filas. */

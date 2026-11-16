@@ -39,8 +39,20 @@ object LectorSpacing {
     val listBottomForDock = 96.dp
     val pageGap = 12.dp
     val pageSideMargin = 14.dp
+    val none = 0.dp
     val cardOuterPadding = 6.dp
     val cardInnerPadding = 14.dp
+}
+
+/** Distancias de movimiento (DESIGN §3). */
+object LectorMotion {
+    val navOffset = 12.dp
+    val entranceOffset = 8.dp
+}
+
+/** El blanco puro solo existe en las páginas del documento (DESIGN §2.1). */
+object LectorPaper {
+    val white = androidx.compose.ui.graphics.Color.White
 }
 
 object LectorSizes {

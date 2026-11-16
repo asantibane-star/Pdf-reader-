@@ -51,6 +51,7 @@ import dev.lector.app.domain.model.FractionRect
 import dev.lector.app.domain.model.SearchHit
 import dev.lector.app.data.pdf.FrameworkPdfEngine
 import dev.lector.app.ui.common.PageSkeleton
+import dev.lector.app.ui.theme.LectorPaper
 import dev.lector.app.ui.theme.LectorShapes
 import dev.lector.app.ui.theme.LectorSpacing
 import dev.lector.app.ui.theme.LectorTheme
@@ -237,7 +238,7 @@ private fun PdfPageItem(
             .width(widthDp)
             .height(heightDp)
             .clip(LectorShapes.Page)
-            .background(Color.White),
+            .background(LectorPaper.white),
     ) {
         val bitmap = base
         if (bitmap == null) {

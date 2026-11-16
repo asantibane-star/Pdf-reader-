@@ -78,6 +78,7 @@ import dev.lector.app.ui.settings.LastErrorScreen
 import dev.lector.app.ui.settings.LicensesScreen
 import dev.lector.app.ui.settings.SettingsScreen
 import dev.lector.app.ui.settings.SettingsViewModel
+import dev.lector.app.ui.theme.LectorMotion
 import dev.lector.app.ui.theme.LectorTheme
 import dev.lector.app.ui.theme.LocalMotionEnabled
 import dev.lector.app.ui.viewer.pdf.PdfViewerScreen
@@ -287,7 +288,7 @@ private fun LectorNavHost(
 ) {
     val context = LocalContext.current
     val motion = LocalMotionEnabled.current
-    val offsetPx = with(LocalDensity.current) { 12.dp.roundToPx() }
+    val offsetPx = with(LocalDensity.current) { LectorMotion.navOffset.roundToPx() }
     val enter: androidx.compose.animation.AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
         if (motion) fadeIn(tween(NAV_MS, easing = LectorEasing)) + slideInVertically(tween(NAV_MS, easing = LectorEasing)) { offsetPx } else EnterTransition.None
     }
