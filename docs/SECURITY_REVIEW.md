@@ -2,7 +2,7 @@
 
 Cada control de `docs/PLAN.md` §4 con su estado y la evidencia que lo demuestra. «Prueba» = prueba automática del repositorio
 (`app/src/test`, se ejecuta con `./gradlew testDebugUnitTest`); «Instrumentada» = `app/src/androidTest` (se ejecuta en la CI con
-emulador, **no se ejecutó localmente**, ver `docs/DECISIONS.md` §2); «CI» = paso de `.github/workflows/ci.yml`.
+emuladores API 34 y 36; en verde, ver `docs/DECISIONS.md` §9); «CI» = paso de `.github/workflows/ci.yml`.
 
 Leyenda: ✅ cumplido y verificado · ⚠️ cumplido con una salvedad · ❌ pendiente · ➖ no aplica.
 
@@ -72,5 +72,5 @@ Leyenda: ✅ cumplido y verificado · ⚠️ cumplido con una salvedad · ❌ pe
 
 ## Resumen
 
-Pendiente: fijar las acciones de CI por SHA (❌) y las salvedades ⚠️ anotadas arriba. Las pruebas instrumentadas y la lista de
-`docs/QA.md` son la primera ejecución en un dispositivo real.
+Pendiente: fijar las acciones de CI por SHA (❌) y las salvedades ⚠️ anotadas arriba. Las pruebas instrumentadas ya corrieron en
+emuladores; lo que depende de gestos, de la cámara o de Google Play Services se comprueba con `docs/QA.md` en un teléfono.

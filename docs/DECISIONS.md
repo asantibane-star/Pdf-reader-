@@ -34,8 +34,8 @@ El contenedor donde se escribió el código bloquea por defecto `dl.google.com` 
 `gcp.mirrors.maven.org` (espejo al que Maven Central redirige los archivos grandes). Se pidió y se aprobó añadirlos al
 entorno; no se usó ninguna vía alternativa. El SDK (plataforma 37, build-tools 37.0.0) se instaló con `sdkmanager`.
 
-No hay KVM en ese contenedor, así que **no se pudo ejecutar un emulador**: las pruebas instrumentadas (§11.3) están
-escritas y compilan, pero se ejecutan en la CI de GitHub (`instrumented.yml`), no se ejecutaron localmente.
+No hay KVM en ese contenedor, así que **no se pudo ejecutar un emulador localmente**. Las pruebas instrumentadas (§11.3) se
+ejecutaron en la CI de GitHub (`instrumented.yml`, emuladores API 34 y 36): ver §9.
 
 ## 3. Spike de LibreOffice (PLAN §7.2, Fase 5) — **NO cumplido: se adopta el respaldo de §7.6**
 
@@ -120,15 +120,23 @@ El manifiesto elimina `INTERNET`, `ACCESS_NETWORK_STATE` y el permiso
 
 ## 9. Verificación disponible y alcance real de las pruebas
 
-- **Pruebas unitarias (JVM + Robolectric): 117**, se ejecutan en cada build. Incluyen una prueba de humo que arranca la app real
-  (tema, fuentes, navegación, ingesta y visor de texto) y `ProjectRulesTest`, que convierte las reglas de `CLAUDE.md` en
-  comprobaciones automáticas.
-- **`PdfRenderer` no se puede ejecutar bajo Robolectric**: el motor PDF, el zoom y el render real solo se prueban en
-  `androidTest` (CI con emulador) y en `docs/QA.md`. Los ViewModels del visor se probaron con un motor falso.
-- **El visor web (`viewer.js` + bibliotecas vendorizadas) sí se ejecutó en Chromium real** con la CSP y el régimen de red del
-  WebView (`scripts/check-viewer.js`): hojas (`.xlsx`, `.xls`, `.csv`), Word y PowerPoint, sin peticiones externas.
-- **No se ejecutó nunca en un dispositivo ni emulador** (no había KVM). Es el principal riesgo residual: el comportamiento del
-  zoom táctil, el modo inmersivo, el escáner de ML Kit y el WebView real se verifican en `docs/QA.md`.
+- **Pruebas unitarias (JVM + Robolectric): 117**, se ejecutan en cada build local y en la CI. Incluyen una prueba de humo que
+  arranca la app real (tema, fuentes, navegación, ingesta y visor de texto) y `ProjectRulesTest`, que convierte las reglas de
+  `CLAUDE.md` en comprobaciones automáticas.
+- **Pruebas instrumentadas: 17, en verde en emuladores Android 14 (API 34) y Android 16 (API 36)** en la CI de GitHub
+  (flujo «Pruebas instrumentadas», ejecución #4 sobre el commit `df354b6`). Cubren: el motor PDF real (`PdfRenderer`) con todos
+  los fixtures, 200 renders concurrentes con cierre a mitad sin fallo, región a alta resolución, PDF corrupto/vacío/falso →
+  `Corrupt`, contraseña y búsqueda en API 36, un PDF escrito por `JpegPdfWriter` que se abre con N páginas, el visor web en un
+  WebView real (`.xlsx`, `.xls`, `.csv`, `.pptx`, documento roto → error, peticiones a `example.com` y con nonce incorrecto
+  bloqueadas, `zipbomb` rechazado antes del WebView) y abrir un PDF y un `.txt` por intent VIEW con `recreate()` de la actividad.
+  Las dos primeras ejecuciones fallaron por errores míos (una opción de Gradle inexistente y un texto escrito en español en una
+  prueba con el emulador en inglés), no de la app. El flujo vuelve a ejecutarse solo en PR y a mano, como pide PLAN §12.
+- **El visor web (`viewer.js` + bibliotecas vendorizadas) también se ejecutó en Chromium real** con la CSP y el régimen de red del
+  WebView (`scripts/check-viewer.js`).
+- **Lo que sigue sin verificar en un dispositivo**: el zoom táctil y el re-render de región al hacer pellizco (las pruebas
+  comprueban el render de región, no el gesto), el modo inmersivo y el ocultado de barras, el escáner de ML Kit y el modo simple
+  con cámara/galería, el aspecto visual del visor de PDF y la fluidez de un PDF de cientos de páginas. Son los puntos de
+  `docs/QA.md`.
 - Capturas de las pantallas reales (claro/oscuro) en `docs/design/screens/`, generadas con Robolectric (`ScreenshotTest`).
   No están el visor de PDF ni el escáner (necesitan `PdfRenderer` / Google Play Services).
 
@@ -138,6 +146,9 @@ El manifiesto elimina `INTERNET`, `ACCESS_NETWORK_STATE` y el permiso
   Si se añade una dependencia hay que regenerarlo.
 - Las acciones de GitHub usan etiquetas (`@v4`), **no SHA de commit** como pide PLAN §12: desde el entorno de construcción no se
   podía consultar GitHub para resolverlos (y un SHA inventado rompería la CI). `scripts/pin-actions.sh` lo hace con red.
+- La primera CI falló por la verificación de dependencias: el build local tenía en caché seis artefactos de metadatos (BOMs y
+  POM del classpath de plugins) y no se habían registrado. Se corrigió regenerando `verification-metadata.xml` con una caché de
+  Gradle vacía y se comprobó con otra caché vacía. **Al regenerarlo hay que usar siempre `GRADLE_USER_HOME` limpio.**
 
 ## 11. Pendiente / siguiente paso
 

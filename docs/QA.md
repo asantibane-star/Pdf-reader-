@@ -1,8 +1,9 @@
 # Verificación manual en el teléfono
 
 La ejecuta quien prueba la app (PLAN §11.4). Marca cada punto; anota el modelo y la versión de Android.
-Las pruebas automáticas (`./gradlew lint testDebugUnitTest`, `connectedDebugAndroidTest` en la CI) no sustituyen esta lista:
-no hubo un dispositivo ni emulador disponible mientras se escribió el código, así que **esta es la primera ejecución real**.
+Las pruebas automáticas (117 unitarias y 17 instrumentadas en emuladores API 34 y 36, ver `docs/DECISIONS.md` §9) ya cubren el
+motor PDF, el WebView y abrir archivos por intent. **No cubren** los gestos táctiles, la cámara, el escáner de Google ni el
+aspecto real en un teléfono: eso es lo que esta lista comprueba por primera vez.
 
 ## Instalación
 
