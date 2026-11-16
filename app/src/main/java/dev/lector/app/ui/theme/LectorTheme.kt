@@ -11,7 +11,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
@@ -65,12 +65,19 @@ fun LectorTheme(
 
     val view = LocalView.current
     if (!view.isInEditMode) {
-        SideEffect {
+        DisposableEffect(view, dark) {
             val window = (view.context as? Activity)?.window
-            if (window != null) {
-                val controller = WindowCompat.getInsetsController(window, view)
-                controller.isAppearanceLightStatusBars = !dark
-                controller.isAppearanceLightNavigationBars = !dark
+            val controller = window?.let { WindowCompat.getInsetsController(it, view) }
+            val previousStatus = controller?.isAppearanceLightStatusBars
+            val previousNavigation = controller?.isAppearanceLightNavigationBars
+            controller?.isAppearanceLightStatusBars = !dark
+            controller?.isAppearanceLightNavigationBars = !dark
+            onDispose {
+                // Una pantalla con tema forzado devuelve las barras del sistema a como estaban.
+                if (forceDark && controller != null) {
+                    previousStatus?.let { controller.isAppearanceLightStatusBars = it }
+                    previousNavigation?.let { controller.isAppearanceLightNavigationBars = it }
+                }
             }
         }
     }

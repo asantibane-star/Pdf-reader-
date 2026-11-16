@@ -19,6 +19,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalBottomSheetProperties
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarData
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -90,11 +92,15 @@ fun LectorDialog(
 /** Hoja inferior (DESIGN §4.5): radio superior 28 dp, asa de 32 × 4 dp. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LectorSheet(onDismiss: () -> Unit, content: @Composable () -> Unit) {
+fun LectorSheet(onDismiss: () -> Unit, dismissible: Boolean = true, content: @Composable () -> Unit) {
     val c = LectorTheme.colors
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        sheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = true,
+            confirmValueChange = { target -> dismissible || target != SheetValue.Hidden },
+        ),
+        properties = ModalBottomSheetProperties(shouldDismissOnBackPress = dismissible),
         shape = LectorShapes.SheetTop,
         containerColor = c.surface,
         contentColor = c.text,

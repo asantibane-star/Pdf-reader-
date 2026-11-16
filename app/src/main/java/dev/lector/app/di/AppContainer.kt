@@ -18,7 +18,12 @@ import dev.lector.app.data.settings.DataStoreSettingsRepository
 import dev.lector.app.data.share.DocumentExporter
 import dev.lector.app.data.share.FileProviderExporter
 import dev.lector.app.domain.repo.RecentsRepository
+import dev.lector.app.domain.repo.ScanRepository
 import dev.lector.app.domain.repo.SettingsRepository
+import dev.lector.app.data.scan.FileScanRepository
+import dev.lector.app.data.scan.ImageImport
+import dev.lector.app.data.scan.MediaStoreSaver
+import dev.lector.app.data.scan.MlKitScanner
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -59,6 +64,16 @@ class AppContainer(private val app: Application) : AppServices {
     override val recents: RecentsRepository by lazy { RoomRecentsRepository(database.recentDao(), thumbnails, dispatchers) }
 
     override val settings: SettingsRepository by lazy { DataStoreSettingsRepository(app) }
+
+    private val imageImport = ImageImport(app, dispatchers)
+
+    override val scans: ScanRepository by lazy {
+        FileScanRepository(app, dispatchers, imageImport, MediaStoreSaver(app.contentResolver, dispatchers))
+    }
+
+    override val scanner = MlKitScanner()
+
+    val images: ImageImport get() = imageImport
 
     override val cacheDir: File get() = app.cacheDir
     override val filesDir: File get() = app.filesDir

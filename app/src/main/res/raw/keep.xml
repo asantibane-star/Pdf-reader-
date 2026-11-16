@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- TEMPORAL (se elimina al cerrar la Fase 7): recursos de pantallas que aún no están escritas. -->
-<resources
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@drawable/ic_*,@plurals/scan_pages,@string/scan_*,@string/action_*,@string/a11y_*,@string/home_opening,@string/viewer_approx_*,@string/viewer_loading_page,@string/viewer_page_slider,@string/viewer_sheet_*,@string/viewer_unavailable_*" />

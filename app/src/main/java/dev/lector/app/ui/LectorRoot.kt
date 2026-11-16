@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import androidx.core.net.toUri
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -21,6 +22,13 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
+import dev.lector.app.ui.theme.LectorSpacing
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -42,11 +51,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import dev.lector.app.R
 import dev.lector.app.core.result.DocError
+import dev.lector.app.core.result.Outcome
 import dev.lector.app.di.AppContainer
 import dev.lector.app.domain.model.AppSettings
 import dev.lector.app.ui.common.LectorDialog
+import dev.lector.app.ui.common.LectorSnackbarHost
 import dev.lector.app.ui.common.LectorEasing
 import dev.lector.app.ui.common.PrimaryButton
+import dev.lector.app.ui.common.ErrorIllustration
 import dev.lector.app.ui.common.StatePane
 import dev.lector.app.ui.common.TertiaryButton
 import dev.lector.app.ui.common.DestructiveButton
@@ -54,6 +66,14 @@ import dev.lector.app.ui.common.messageRes
 import dev.lector.app.ui.home.HomeScreen
 import dev.lector.app.ui.home.HomeViewModel
 import dev.lector.app.ui.nav.Routes
+import dev.lector.app.ui.scan.FallbackScanScreen
+import dev.lector.app.ui.scan.FallbackScanViewModel
+import dev.lector.app.ui.scan.NameScanSheet
+import dev.lector.app.ui.scan.OrphanScanDialog
+import dev.lector.app.ui.scan.SaveFailedDialog
+import dev.lector.app.ui.scan.ScanEvent
+import dev.lector.app.ui.scan.ScanState
+import dev.lector.app.ui.scan.ScanViewModel
 import dev.lector.app.ui.settings.LastErrorScreen
 import dev.lector.app.ui.settings.LicensesScreen
 import dev.lector.app.ui.settings.SettingsScreen
@@ -93,6 +113,7 @@ private val pickerMimeTypes = arrayOf(
 @Composable
 fun LectorRoot(viewModel: MainViewModel, settings: AppSettings, container: AppContainer) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val nav = rememberNavController()
     val openState by viewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -126,6 +147,68 @@ fun LectorRoot(viewModel: MainViewModel, settings: AppSettings, container: AppCo
         }
     }
 
+    // ---- Escáner: ML Kit (Google Play Services) y, si no está disponible, el modo simple.
+    val scanVm: ScanViewModel = viewModel(factory = ScanViewModel.Factory)
+    val scanState by scanVm.state.collectAsStateWithLifecycle()
+    val snackbar = remember { SnackbarHostState() }
+    val haptics = LocalHapticFeedback.current
+    val savedLabel = stringResource(R.string.scan_saved)
+    val shareLabel = stringResource(R.string.action_share)
+    val fallbackNotice = stringResource(R.string.scan_fallback_notice)
+    var failedName by remember { mutableStateOf("") }
+
+    val scannerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+        // RESULT_CANCELED: no se hace nada.
+        if (result.resultCode == Activity.RESULT_OK) {
+            container.scanner.resultPdf(result.data)?.let { scanVm.onScannerResult(it.uri, it.pageCount) }
+        }
+    }
+    val saveElsewhere = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/pdf")) { uri ->
+        if (uri != null) scanVm.saveElsewhere(uri.toString(), failedName)
+    }
+    val startScan: () -> Unit = {
+        val activity = context.findActivity()
+        scope.launch {
+            val sender = if (activity != null) container.scanner.startIntent(activity) else Outcome.Failure(DocError.ScannerUnavailable)
+            when (sender) {
+                is Outcome.Success -> try {
+                    scannerLauncher.launch(IntentSenderRequest.Builder(sender.value).build())
+                } catch (_: android.content.ActivityNotFoundException) {
+                    nav.navigate(Routes.SCAN_SIMPLE) { launchSingleTop = true }
+                }
+                is Outcome.Failure -> {
+                    // Sin Google Play Services: modo simple con un aviso.
+                    nav.navigate(Routes.SCAN_SIMPLE) { launchSingleTop = true }
+                    snackbar.showSnackbar(fallbackNotice)
+                }
+            }
+        }
+    }
+    LaunchedEffect(scanVm, nav) {
+        scanVm.eventFlow.collect { event ->
+            when (event) {
+                is ScanEvent.Snack -> scope.launch { snackbar.showSnackbar(resources.getString(event.messageRes)) }
+                is ScanEvent.Saved -> {
+                    haptics.performHapticFeedback(HapticFeedbackType.Confirm)
+                    // Se sale del modo simple (si estaba) y se abre el PDF recién guardado en el visor.
+                    if (nav.currentBackStackEntry?.destination?.route == Routes.SCAN_SIMPLE) nav.popBackStack(Routes.HOME, inclusive = false)
+                    viewModel.open(event.uri, external = false)
+                    scope.launch {
+                        val result = snackbar.showSnackbar(savedLabel, actionLabel = shareLabel)
+                        if (result == SnackbarResult.ActionPerformed) {
+                            val send = Intent(Intent.ACTION_SEND).apply {
+                                type = "application/pdf"
+                                putExtra(Intent.EXTRA_STREAM, event.uri.toUri())
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+                            launchSafely(context, Intent.createChooser(send, null))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     val goBack: () -> Unit = {
         if (nav.previousBackStackEntry != null) nav.popBackStack() else (context as? Activity)?.finish()
     }
@@ -136,7 +219,8 @@ fun LectorRoot(viewModel: MainViewModel, settings: AppSettings, container: AppCo
             settings = settings,
             goBack = goBack,
             onOpen = { picker.launch(pickerMimeTypes) },
-            onScan = { nav.navigate(Routes.SCAN_SIMPLE) { launchSingleTop = true } },
+            onScan = startScan,
+            onCreateScan = scanVm::createFromImages,
             onOpenRecent = { recent -> viewModel.open(recent.uri, external = false, recentId = recent.id) },
             onShareRecent = { recent ->
                 val send = Intent(Intent.ACTION_SEND).apply {
@@ -150,6 +234,19 @@ fun LectorRoot(viewModel: MainViewModel, settings: AppSettings, container: AppCo
         )
 
         OpeningOverlay(visible = openState == OpenState.Opening, onCancel = viewModel::cancelOpen)
+        LectorSnackbarHost(
+            state = snackbar,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = LectorSpacing.listBottomForDock),
+        )
+        ScanOverlays(
+            state = scanState,
+            onSave = scanVm::save,
+            onDiscard = scanVm::discard,
+            onAcceptOrphan = scanVm::acceptOrphan,
+            onRetry = { scanVm.save(failedName.ifBlank { "" }) },
+            onElsewhere = { saveElsewhere.launch("${failedName.ifBlank { "Escaneo" }}.pdf") },
+            onNameKnown = { failedName = it },
+        )
         (openState as? OpenState.Failed)?.let { failed ->
             if (failed.error == DocError.AccessLost && failed.recentId != null) {
                 LectorDialog(
@@ -183,6 +280,7 @@ private fun LectorNavHost(
     goBack: () -> Unit,
     onOpen: () -> Unit,
     onScan: () -> Unit,
+    onCreateScan: (List<String>) -> Unit,
     onOpenRecent: (dev.lector.app.domain.model.RecentDocument) -> Unit,
     onShareRecent: (dev.lector.app.domain.model.RecentDocument) -> Unit,
     onSettingsChange: ((AppSettings) -> AppSettings) -> Unit,
@@ -238,6 +336,10 @@ private fun LectorNavHost(
             val vm: TextViewerViewModel = viewModel(factory = TextViewerViewModel.Factory)
             TextViewerScreen(viewModel = vm, onBack = goBack, onOpenWithOther = { vm.sourceUri?.let { launchSafely(context, openWithIntent(it)) } })
         }
+        composable(Routes.SCAN_SIMPLE) {
+            val vm: FallbackScanViewModel = viewModel(factory = FallbackScanViewModel.Factory)
+            FallbackScanScreen(viewModel = vm, onBack = goBack, onCreate = onCreateScan)
+        }
         composable(Routes.SETTINGS) {
             val vm: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
             SettingsScreen(
@@ -252,6 +354,32 @@ private fun LectorNavHost(
             val vm: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
             LastErrorScreen(viewModel = vm, onBack = goBack)
         }
+    }
+}
+
+/** Hoja "Nombrar", progreso de creación, errores de guardado y pendientes huérfanos. */
+@Composable
+private fun ScanOverlays(
+    state: ScanState,
+    onSave: (String) -> Unit,
+    onDiscard: () -> Unit,
+    onAcceptOrphan: () -> Unit,
+    onRetry: () -> Unit,
+    onElsewhere: () -> Unit,
+    onNameKnown: (String) -> Unit,
+) {
+    when (state) {
+        ScanState.Idle -> Unit
+        is ScanState.Working -> Box(Modifier.fillMaxSize().background(LectorTheme.colors.bg).windowInsetsPadding(WindowInsets.safeDrawing)) {
+            StatePane(
+                title = stringResource(state.label),
+                body = if (state.total > 0) stringResource(R.string.viewer_page_counter, state.done, state.total) else stringResource(R.string.viewer_opening_body),
+            )
+        }
+        is ScanState.Naming -> NameScanSheet(state, onSave = { name -> onNameKnown(name); onSave(name) }, onDiscard = onDiscard)
+        is ScanState.Saving -> Unit
+        is ScanState.SaveFailed -> SaveFailedDialog(state, onRetry = onRetry, onElsewhere = onElsewhere, onDiscard = onDiscard)
+        is ScanState.OrphanPrompt -> OrphanScanDialog(onSave = onAcceptOrphan, onDiscard = onDiscard)
     }
 }
 
@@ -286,6 +414,7 @@ private fun OpenErrorPane(error: DocError, onBack: () -> Unit, onOpenWith: () ->
     Box(Modifier.fillMaxSize().background(LectorTheme.colors.bg).windowInsetsPadding(WindowInsets.safeDrawing)) {
         StatePane(
             title = stringResource(R.string.err_title),
+            illustration = { ErrorIllustration() },
             body = stringResource(error.messageRes()),
             primaryLabel = stringResource(R.string.action_back),
             onPrimary = onBack,

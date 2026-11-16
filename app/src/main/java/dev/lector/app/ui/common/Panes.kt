@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,6 +23,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import dev.lector.app.R
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Shape
@@ -70,6 +75,15 @@ fun StatePane(
     }
 }
 
+/** Ilustración discreta de los errores: icono de aviso en un mosaico `sunken` (sin color extra). */
+@Composable
+fun ErrorIllustration(modifier: Modifier = Modifier) {
+    val c = LectorTheme.colors
+    Box(modifier.size(56.dp).clip(LectorShapes.Tile).background(c.sunken), contentAlignment = Alignment.Center) {
+        LectorIcon(R.drawable.ic_warning_circle, null, tint = c.textMuted, size = 28.dp)
+    }
+}
+
 /** Esqueleto con brillo que recorre la forma (1 200 ms, lineal). Estático con las animaciones apagadas. */
 @Composable
 fun SkeletonBox(modifier: Modifier = Modifier, shape: Shape = LectorShapes.Tile, color: androidx.compose.ui.graphics.Color = LectorTheme.colors.sunken) {
@@ -109,7 +123,8 @@ fun SkeletonBox(modifier: Modifier = Modifier, shape: Shape = LectorShapes.Tile,
 /** Marcador de página en carga: rectángulo blanco con brillo (nunca un hueco vacío). */
 @Composable
 fun PageSkeleton(modifier: Modifier = Modifier) {
-    SkeletonBox(modifier = modifier.fillMaxWidth(), shape = LectorShapes.Page, color = androidx.compose.ui.graphics.Color.White)
+    val label = stringResource(R.string.viewer_loading_page)
+    SkeletonBox(modifier = modifier.fillMaxWidth().semantics { contentDescription = label }, shape = LectorShapes.Page, color = androidx.compose.ui.graphics.Color.White)
 }
 
 /** Esqueleto de Inicio: tarjeta destacada y cuatro filas. */

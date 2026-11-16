@@ -33,6 +33,7 @@ import dev.lector.app.ui.common.IconCircleButton
 import dev.lector.app.ui.common.LectorSheet
 import dev.lector.app.ui.common.SheetRow
 import dev.lector.app.ui.common.SkeletonBox
+import dev.lector.app.ui.common.ErrorIllustration
 import dev.lector.app.ui.common.StatePane
 import dev.lector.app.ui.common.messageRes
 import dev.lector.app.ui.theme.LectorSizes
@@ -54,6 +55,7 @@ fun TextViewerScreen(viewModel: TextViewerViewModel, onBack: () -> Unit, onOpenW
             is TextUiState.Content -> TextLines(current.lines, step)
             is TextUiState.Error -> StatePane(
                 title = stringResource(R.string.err_title),
+                illustration = { ErrorIllustration() },
                 body = stringResource(current.error.messageRes()),
                 primaryLabel = stringResource(R.string.action_retry),
                 onPrimary = viewModel::load,

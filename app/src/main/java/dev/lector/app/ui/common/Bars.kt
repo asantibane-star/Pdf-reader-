@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
@@ -158,6 +159,7 @@ fun PageSlider(
     val haptics = LocalHapticFeedback.current
     var lastHaptic by remember { mutableLongStateOf(0L) }
     val description = stringResource(R.string.viewer_page_state, page + 1, pageCount)
+    val sliderLabel = stringResource(R.string.viewer_page_slider)
     val last = (pageCount - 1).coerceAtLeast(1)
     Slider(
         value = page.toFloat().coerceIn(0f, last.toFloat()),
@@ -175,7 +177,10 @@ fun PageSlider(
         onValueChangeFinished = onChangeFinished,
         valueRange = 0f..last.toFloat(),
         steps = (last - 1).coerceAtLeast(0),
-        modifier = modifier.semantics { stateDescription = description },
+        modifier = modifier.semantics {
+            contentDescription = sliderLabel
+            stateDescription = description
+        },
         thumb = {
             Box(Modifier.size(LectorSizes.sliderThumb).clip(LectorShapes.Pill).background(c.accent))
         },

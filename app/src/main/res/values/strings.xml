@@ -9,7 +9,6 @@
     <string name="home_empty_title">Tus documentos aparecerán aquí</string>
     <string name="home_empty_body">Abre un archivo del teléfono o escanea un papel para guardarlo como PDF.</string>
     <string name="home_settings">Ajustes</string>
-    <string name="home_opening">Abriendo documento</string>
     <string name="continue_page">Página %1$d de %2$d</string>
     <string name="group_today">Hoy</string>
     <string name="group_week">Esta semana</string>
@@ -32,11 +31,7 @@
     <string name="action_find_file">Buscar archivo</string>
     <string name="action_cancel">Cancelar</string>
     <string name="action_open">Abrir</string>
-    <string name="action_save">Guardar</string>
-    <string name="action_discard">Descartar</string>
     <string name="action_share">Compartir</string>
-    <string name="action_close">Cerrar</string>
-    <string name="action_ok">Aceptar</string>
 
     <!-- Errores (DESIGN §7) -->
     <string name="err_unsupported">Lector no puede abrir este tipo de archivo.</string>
@@ -57,6 +52,7 @@
     <string name="err_converter_unavailable">Este teléfono no puede mostrar este formato.</string>
     <string name="err_webview">Falta un componente del sistema (WebView) para mostrar este archivo.</string>
     <string name="err_out_of_memory">No hay memoria suficiente para mostrar este documento.</string>
+    <string name="err_scanner_save">No se pudo preparar el escaneo.</string>
     <string name="err_scanner">El escáner avanzado no está disponible. Usa el modo simple.</string>
     <string name="err_save">No se pudo guardar el PDF.</string>
     <string name="err_closed">El documento ya se cerró.</string>
@@ -100,6 +96,8 @@
     <string name="viewer_text_size">Tamaño del texto</string>
     <string name="viewer_text_larger">Más grande</string>
     <string name="viewer_text_smaller">Más pequeño</string>
+    <string name="link_open_title">Abrir enlace</string>
+    <string name="link_open_browser">Abrir en el navegador</string>
     <string name="viewer_opening_title">Abriendo documento</string>
     <string name="viewer_opening_body">Un instante.</string>
 

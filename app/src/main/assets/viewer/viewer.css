@@ -1,0 +1,38 @@
+/* Colores inyectados por viewer.js desde los tokens del tema activo (DESIGN §6.5). */
+:root {
+  --bg: #F4F5F6;
+  --surface: #FCFCFD;
+  --sunken: #E9EBEE;
+  --text: #15171A;
+  --muted: #5C636B;
+  --line: rgba(21, 23, 26, 0.08);
+  --accent: #0E6B56;
+  --top: 72px;
+  --bottom: 96px;
+}
+html, body { margin: 0; padding: 0; background: var(--surface); color: var(--text); }
+body { font: 13px/18px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-text-size-adjust: 100%; }
+#root { min-height: 100vh; box-sizing: border-box; padding-top: var(--top); padding-bottom: var(--bottom); }
+
+.notice { margin: 8px 16px; padding: 8px 12px; border-radius: 12px; background: var(--sunken); color: var(--muted); }
+
+/* Hojas de cálculo */
+.sheet { overflow: visible; }
+.sheet[hidden] { display: none; }
+.sheet table { border-collapse: separate; border-spacing: 0; min-width: 100%; font-size: 13px; line-height: 18px; }
+.sheet th, .sheet td { padding: 7px 12px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); white-space: nowrap; max-width: 280px; overflow: hidden; text-overflow: ellipsis; background: var(--surface); }
+.sheet th { position: sticky; top: var(--top); z-index: 2; background: var(--sunken); color: var(--muted); font-weight: 500; text-align: center; }
+.sheet th.row { position: sticky; left: 0; z-index: 1; top: auto; min-width: 36px; }
+.sheet th.corner { left: 0; z-index: 3; }
+.sheet td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.sheet td.bool { text-align: center; }
+
+/* Word */
+.docx-wrapper { background: transparent !important; padding: 8px 0 !important; }
+.docx-wrapper > section.docx { box-shadow: 0 0 0 1px var(--line) !important; margin-bottom: 12px !important; }
+
+/* PowerPoint (vista aproximada): lienzo oscuro tras las diapositivas */
+body.pptx, body.pptx html { background: var(--bg); }
+.pptx #root { padding-left: 14px; padding-right: 14px; }
+
+.empty { padding: 32px 16px; color: var(--muted); }

@@ -62,6 +62,7 @@ import dev.lector.app.R
 import dev.lector.app.core.result.DocError
 import dev.lector.app.domain.model.AppSettings
 import dev.lector.app.ui.common.FloatingChrome
+import dev.lector.app.ui.findActivity
 import dev.lector.app.ui.common.FloatingPageBar
 import dev.lector.app.ui.common.FloatingPill
 import dev.lector.app.ui.common.FloatingTopBar
@@ -72,8 +73,10 @@ import dev.lector.app.ui.common.LectorSnackbarHost
 import dev.lector.app.ui.common.LectorSwitch
 import dev.lector.app.ui.common.LectorTextField
 import dev.lector.app.ui.common.PageSkeleton
+import dev.lector.app.ui.common.SearchBar
 import dev.lector.app.ui.common.PrimaryButton
 import dev.lector.app.ui.common.SheetRow
+import dev.lector.app.ui.common.ErrorIllustration
 import dev.lector.app.ui.common.StatePane
 import dev.lector.app.ui.common.TertiaryButton
 import dev.lector.app.ui.common.messageRes
@@ -147,6 +150,7 @@ private fun ErrorPane(
     Box(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
         StatePane(
             title = title.ifBlank { stringResource(R.string.app_name) },
+            illustration = { ErrorIllustration() },
             body = stringResource(error.error.messageRes(error.passwordSupported)),
             primaryLabel = stringResource(R.string.action_retry).takeIf { error.error != DocError.PasswordRequired },
             onPrimary = onRetry.takeIf { error.error != DocError.PasswordRequired },
@@ -417,52 +421,6 @@ private fun GoToPageDialog(pageCount: Int, onDismiss: () -> Unit, onGo: (Int) ->
     }
 }
 
-/** La barra superior se transforma en un campo con contador "3 de 17" y flechas (DESIGN §6.2). */
-@Composable
-private fun SearchBar(
-    query: String,
-    current: Int,
-    total: Int,
-    searching: Boolean,
-    onQueryChange: (String) -> Unit,
-    onPrevious: () -> Unit,
-    onNext: () -> Unit,
-    onClose: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val c = LectorTheme.colors
-    var field by remember { mutableStateOf(TextFieldValue(query)) }
-    val focus = remember { FocusRequester() }
-    LaunchedEffect(Unit) { focus.requestFocus() }
-    FloatingPill(modifier = modifier.fillMaxWidth().height(LectorSizes.barHeight)) {
-        IconCircleButton(R.drawable.ic_arrow_left, stringResource(R.string.viewer_search_close), onClose)
-        Box(Modifier.weight(1f).padding(horizontal = LectorSpacing.xs), contentAlignment = Alignment.CenterStart) {
-            if (field.text.isEmpty()) {
-                Text(stringResource(R.string.viewer_search_hint), style = LectorTheme.type.body, color = c.textMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
-            BasicTextField(
-                value = field,
-                onValueChange = { field = it; onQueryChange(it.text) },
-                singleLine = true,
-                textStyle = LectorTheme.type.body.copy(color = c.text),
-                cursorBrush = SolidColor(c.accent),
-                modifier = Modifier.fillMaxWidth().focusRequester(focus),
-            )
-        }
-        val status = when {
-            query.isBlank() -> ""
-            total > 0 -> stringResource(R.string.viewer_search_count, current + 1, total)
-            searching -> ""
-            else -> stringResource(R.string.viewer_search_none)
-        }
-        if (status.isNotEmpty()) {
-            Text(status, style = LectorTheme.type.mono, color = c.textMuted, maxLines = 1, modifier = Modifier.padding(horizontal = LectorSpacing.xs))
-        }
-        IconCircleButton(R.drawable.ic_caret_up, stringResource(R.string.viewer_search_previous), onPrevious, enabled = total > 0)
-        IconCircleButton(R.drawable.ic_caret_down, stringResource(R.string.viewer_search_next), onNext, enabled = total > 0)
-    }
-}
-
 private fun launchExternal(context: Context, intent: Intent, onMissing: () -> Unit) {
     try {
         context.startActivity(intent)
@@ -471,15 +429,6 @@ private fun launchExternal(context: Context, intent: Intent, onMissing: () -> Un
     } catch (_: SecurityException) {
         onMissing()
     }
-}
-
-internal fun Context.findActivity(): Activity? {
-    var current: Context? = this
-    while (current is ContextWrapper) {
-        if (current is Activity) return current
-        current = current.baseContext
-    }
-    return null
 }
 
 private const val AUTO_HIDE_MS = 3_000L

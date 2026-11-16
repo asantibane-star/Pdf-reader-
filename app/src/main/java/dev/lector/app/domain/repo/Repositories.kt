@@ -29,3 +29,22 @@ interface SettingsRepository {
 
     suspend fun update(transform: (AppSettings) -> AppSettings): Outcome<Unit>
 }
+
+/** Escaneos a PDF: importación del resultado de ML Kit o de imágenes, guardado y pendientes huérfanos. */
+interface ScanRepository {
+    /** Copia YA el PDF temporal del escáner a `filesDir/pending_scan/` (el archivo de ML Kit es temporal). */
+    suspend fun importScannerPdf(uri: String, pageCount: Int): Outcome<dev.lector.app.domain.model.PendingScan>
+
+    /** Crea un PDF (un JPEG por página) a partir de imágenes. [onProgress] recibe (hechas, total). */
+    suspend fun buildFromImages(sources: List<String>, onProgress: (Int, Int) -> Unit = { _, _ -> }): Outcome<dev.lector.app.domain.model.PendingScan>
+
+    /** Guarda en `Documentos/Lector` por MediaStore y devuelve el `content://` del archivo. */
+    suspend fun saveToDocuments(pending: dev.lector.app.domain.model.PendingScan, name: String): Outcome<String>
+
+    /** Guarda en el `Uri` que eligió el usuario ("Guardar en otra ubicación"). */
+    suspend fun saveTo(pending: dev.lector.app.domain.model.PendingScan, destination: String): Outcome<Unit>
+
+    suspend fun discard(id: String)
+
+    suspend fun pending(): List<dev.lector.app.domain.model.PendingScan>
+}

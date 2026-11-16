@@ -8,7 +8,9 @@ import dev.lector.app.data.pdf.PdfEngine
 import dev.lector.app.data.recents.ThumbnailRepository
 import dev.lector.app.data.share.DocumentExporter
 import dev.lector.app.domain.repo.RecentsRepository
+import dev.lector.app.domain.repo.ScanRepository
 import dev.lector.app.domain.repo.SettingsRepository
+import dev.lector.app.data.scan.MlKitScanner
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
 
@@ -25,6 +27,8 @@ interface AppServices {
     val thumbnails: ThumbnailRepository
     val recents: RecentsRepository
     val settings: SettingsRepository
+    val scans: ScanRepository
+    val scanner: MlKitScanner
     val cacheDir: File
     val filesDir: File
 }

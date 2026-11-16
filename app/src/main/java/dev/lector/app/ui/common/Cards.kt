@@ -142,13 +142,14 @@ fun RecentRow(
 ) {
     val c = LectorTheme.colors
     val context = LocalContext.current
+    val moreActions = stringResource(R.string.a11y_recent_actions)
     val meta = stringResource(R.string.meta_separator, relativeTime(recent.lastOpenedAt, now), fileSizeText(context, recent.sizeBytes))
     Row(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = LectorSizes.rowMinHeight)
             .clip(LectorShapes.Tile)
-            .combinedClickable(role = Role.Button, onClick = onClick, onLongClick = onLongClick)
+            .combinedClickable(role = Role.Button, onClick = onClick, onLongClickLabel = moreActions, onLongClick = onLongClick)
             .padding(vertical = LectorSpacing.s),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(LectorSpacing.m),

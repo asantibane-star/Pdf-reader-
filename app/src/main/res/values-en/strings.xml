@@ -6,7 +6,6 @@
     <string name="home_empty_title">Your documents will appear here</string>
     <string name="home_empty_body">Open a file from your phone or scan a paper to save it as a PDF.</string>
     <string name="home_settings">Settings</string>
-    <string name="home_opening">Opening document</string>
     <string name="continue_page">Page %1$d of %2$d</string>
     <string name="group_today">Today</string>
     <string name="group_week">This week</string>
@@ -28,11 +27,7 @@
     <string name="action_find_file">Find file</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_open">Open</string>
-    <string name="action_save">Save</string>
-    <string name="action_discard">Discard</string>
     <string name="action_share">Share</string>
-    <string name="action_close">Close</string>
-    <string name="action_ok">OK</string>
 
     <!-- Errors -->
     <string name="err_unsupported">Lector cannot open this type of file.</string>
@@ -53,6 +48,7 @@
     <string name="err_converter_unavailable">This phone cannot display this format.</string>
     <string name="err_webview">A system component (WebView) is missing to display this file.</string>
     <string name="err_out_of_memory">There is not enough memory to display this document.</string>
+    <string name="err_scanner_save">The scan could not be prepared.</string>
     <string name="err_scanner">The advanced scanner is not available. Use simple mode.</string>
     <string name="err_save">The PDF could not be saved.</string>
     <string name="err_closed">The document is already closed.</string>
@@ -95,6 +91,8 @@
     <string name="viewer_text_size">Text size</string>
     <string name="viewer_text_larger">Larger</string>
     <string name="viewer_text_smaller">Smaller</string>
+    <string name="link_open_title">Open link</string>
+    <string name="link_open_browser">Open in browser</string>
     <string name="viewer_opening_title">Opening document</string>
     <string name="viewer_opening_body">Just a moment.</string>
 
